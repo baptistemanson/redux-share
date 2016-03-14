@@ -28,9 +28,9 @@
     "webpack": "^1.12.14",
     "webpack-dev-server": "^1.14.1",
     "webpack-hot-middleware": "^2.10.0",
-    "redux-share-client":"git@github.com:baptistemanson/redux-share-client.git"
     },
-  "dependencies": {
+  "dependencies": { 
+    "redux-share-client":"git@github.com:baptistemanson/redux-share-client.git"
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
     "ws": "^1.0.1"
