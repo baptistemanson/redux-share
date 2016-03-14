@@ -27,7 +27,7 @@
     "react-dom": "^0.14.7",
     "webpack": "^1.12.14",
     "webpack-dev-server": "^1.14.1",
-    "webpack-hot-middleware": "^2.10.0",
+    "webpack-hot-middleware": "^2.10.0"
     },
   "dependencies": { 
     "redux-share-client":"git@github.com:baptistemanson/redux-share-client.git"
