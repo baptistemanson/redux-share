@@ -9,15 +9,20 @@ class SyncReduxServer {
     this.wss = new WebSocketServer({server: server});
     this.store = store;
     this.broadcastOnReceive = false;
+    this.debug = false;
     this.wss.on('connection', function connection (socket) {
       socket.id = Math.random() * (9999999) + '';
-      console.log('Assigned id: ' + socket.id);
+      if (this.debug) {
+        console.log('Assigned id: ' + socket.id);
+      }
       socket.on('message', function incoming (message) {
         console.log(message);
         let action = JSON.parse(message);
         action.senderId = socket.id;
         this.store.dispatch(action);
-        console.log(store.getState());
+        if (this.debug) {
+          console.log(store.getState());
+        }
         if (this.broadcastOnReceive) {
           this.broadcastToOtherClient(action, socket);
         }
@@ -26,7 +31,11 @@ class SyncReduxServer {
     }.bind(this));
   }
 
-  setBroadcastOnReceive = function (broadcast) {
+  setDebug (debug = false) {
+    this.debug = debug;
+  }
+
+  setBroadcastOnReceive (broadcast) {
     this.broadcastOnReceive = broadcast;
   };
 
@@ -37,7 +46,9 @@ class SyncReduxServer {
     router.use(bodyParser.json())
 
     router.post('/action', function (req, res) {
-      console.log("Dispatches an action to all clients", req.body);
+      if (this.debug) {
+        console.log("Dispatches an action to all clients", req.body);
+      }
       this.spread(req.body);
       res.send(JSON.stringify({success: true}));
       res.end();
@@ -54,8 +65,6 @@ class SyncReduxServer {
   broadcastToOtherClient (action, senderSocket) {
     this.wss.clients.forEach(function each (client) {
       if (client.id !== senderSocket.id && (action.type !== '@@SYNC-CONNECT-SERVER-END')) {
-        console.log(client.id);
-        console.log(senderSocket.id);
         client.send(JSON.stringify(action));
       }
     });
