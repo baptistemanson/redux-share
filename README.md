@@ -42,6 +42,7 @@ app.use('/redux',shareServer.getExpressMiddleware());
 function reducer(state = {} , action) { 
 	if(action.type === "@@SYNC-CONNECT-SERVER-SUCCESS") return action.state;
 }
+```
 
 
 ## API Endpoints (server)
@@ -53,5 +54,5 @@ function reducer(state = {} , action) {
 
 ## Special actions type dispatched
 
-Please consult the client to see the special actions dispatched to the redux store, that you can reduce to add your own algorithm.
+Please consult the [client](https://github.com/baptistemanson/redux-share-client) to see the special actions dispatched to the redux store, that you can reduce to add your own algorithm.
 
