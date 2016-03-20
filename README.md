@@ -1,4 +1,16 @@
 # redux-share-server
+
+```
+  /$$$$$$  /$$                                    
+ /$$__  $$| $$                                    
+| $$  \__/| $$$$$$$   /$$$$$$   /$$$$$$   /$$$$$$ 
+|  $$$$$$ | $$__  $$ |____  $$ /$$__  $$ /$$__  $$
+ \____  $$| $$  \ $$  /$$$$$$$| $$  \__/| $$$$$$$$
+ /$$  \ $$| $$  | $$ /$$__  $$| $$      | $$_____/
+|  $$$$$$/| $$  | $$|  $$$$$$$| $$      |  $$$$$$$
+ \______/ |__/  |__/ \_______/|__/       \_______/
+```
+
 Share redux state across the network between multiple clients and server!
 
 The system is currently provided with an express middleware for the server side implementation, while the client is agnostic.
@@ -28,11 +40,19 @@ app.use('/redux',syncReduxServer.getMiddleware());
 ```javascript
 //will replicate on the server-side the client-side state.
 function reducer(state = {} , action) { 
-	if(action.type === "@@SYNC-CONNECT-SERVER-END") return action.state;
+	if(action.type === "@@SYNC-CONNECT-SERVER-SUCCESS") return action.state;
 }
+```
 
 
-# API Endpoints (server)
+## API Endpoints (server)
 
 * /redux/state: GET the state.
 * /redux/action: POST an action.
+
+
+
+## Special actions type dispatched
+
+Please consult the [client](https://github.com/baptistemanson/redux-share-client) to see the special actions dispatched to the redux store, that you can reduce to add your own algorithm.
+
