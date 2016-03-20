@@ -59,7 +59,7 @@ class ReduxShareServer {
 
         this.store.dispatch(action);
 
-        if (this.options.broadcastMode) {
+        if (this.options.repeaterMode) {
           this.broadcastAction(action,s => s !== socket);
         }
       }.bind(this));
