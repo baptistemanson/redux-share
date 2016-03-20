@@ -17,9 +17,10 @@ fs.readdirSync('node_modules')
 module.exports = [
 {
   entry: {
-    "server":"./src/sync-redux-server"
+    "server":"./src/redux-share-server"
   },
   target:'node',
+  devtool: 'source-map',
   output: {
     path: path.join(__dirname, "dist"),
     filename: "[name].bundle.js",

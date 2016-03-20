@@ -27,11 +27,11 @@ Here is the code to integrate the server side with express:
 //server.js
 
 //start the socket server
-var SyncReduxServer = require('redux-share-server')
-var syncReduxServer = new SyncReduxServer(store,server);
+var ReduxShareServer = require('redux-share-server')
+var shareServer = new ReduxShareServer(store,server);
 
 //bind redux server and express
-app.use('/redux',syncReduxServer.getMiddleware());
+app.use('/redux',shareServer.getExpressMiddleware());
 
 ```
 
