@@ -8,23 +8,26 @@ class ReduxShareServer {
   /**
    * Constructor of the server
    *
-   * @param store
-   * @param server
+   * @param {Object} server
+   * @param {Object} options
    */
-  constructor (store,
-               server,
+  constructor (server,
                options) {
     /**
      * Websocket Server
      */
     this.wss = new WebSocketServer({server: server});
+    this.readyToServe = false;
 
     /**
      * Redux store to link to the clients
      */
-    this.store = store;
+    this.store = null;
 
     let defaultOptions = {
+      //if given in parameter, will not be initiated from the Redux middleware
+      store:null,
+      //if set to true, will output debug on the console
       debug:false,
       //if set, will be called at connection time. Returns the socket.
       onConnection:null,
@@ -38,6 +41,14 @@ class ReduxShareServer {
 
     this.options = Object.assign({},defaultOptions,options);
 
+    if(this.options.store !== null) {
+      this.store = this.options.store;
+    }
+
+    if(this.store) init(this.store);
+  }
+
+  init(store) {
     /**
      * Bind the socket behavior
      */
@@ -65,6 +76,7 @@ class ReduxShareServer {
       }.bind(this));
 
     }.bind(this));
+    this.readyToServe = true;
   }
 
   /**
@@ -92,7 +104,9 @@ class ReduxShareServer {
       let action = req.body;
       this.log('Dispatching an action to the store', action);
       this.store.dispatch(action);
-      this.broadcastAction(action);
+      if(this.readyToServe) {
+        this.broadcastAction(action);
+      }
       res.send(JSON.stringify({success: true}));
       res.end();
     }.bind(this));
@@ -103,6 +117,33 @@ class ReduxShareServer {
     }.bind(this));
 
     return router;
+  }
+
+  /**
+   * Get the middleware for Redux
+   * This middleware will broadcast server actions to all clients
+   *
+   * @returns {Function}
+   */
+  getReduxMiddleware () {
+    return store => next => action => {
+      this.log('Action [' + action.type + '] received by the server redux middleware');
+
+      if(this.store === null) {
+        this.store = store;
+      }
+
+      //need to enrich next action.
+      let result = next(action);
+      // If the action have been received, we don't send it back to the client
+      if (action.origin === undefined || action.origin === 'server') {
+        if (this.options.repeaterMode) {
+          this.broadcastAction(action);
+        }
+      }
+      if (action.type === "@@SERVER-LISTEN-START") this.init(store);
+      return result;
+    }
   }
 
   /**

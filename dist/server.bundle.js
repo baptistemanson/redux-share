@@ -68,24 +68,28 @@ return /******/ (function(modules) { // webpackBootstrap
 	  /**
 	   * Constructor of the server
 	   *
-	   * @param store
-	   * @param server
+	   * @param {Object} server
+	   * @param {Object} options
 	   */
 	
-	  function ReduxShareServer(store, server, options) {
+	  function ReduxShareServer(server, options) {
 	    _classCallCheck(this, ReduxShareServer);
 	
 	    /**
 	     * Websocket Server
 	     */
 	    this.wss = new WebSocketServer({ server: server });
+	    this.readyToServe = false;
 	
 	    /**
 	     * Redux store to link to the clients
 	     */
-	    this.store = store;
+	    this.store = null;
 	
 	    var defaultOptions = {
+	      //if given in parameter, will not be initiated from the Redux middleware
+	      store: null,
+	      //if set to true, will output debug on the console
 	      debug: false,
 	      //if set, will be called at connection time. Returns the socket.
 	      onConnection: null,
@@ -99,43 +103,53 @@ return /******/ (function(modules) { // webpackBootstrap
 	
 	    this.options = Object.assign({}, defaultOptions, options);
 	
-	    /**
-	     * Bind the socket behavior
-	     */
-	    this.wss.on('connection', function connection(socket) {
-	      if (typeof this.options.onConnection == 'function') {
-	        socket = this.options.onConnection(socket) || socket;
-	      }
+	    if (this.options.store !== null) {
+	      this.store = this.options.store;
+	    }
 	
-	      socket.on('message', function incoming(message) {
-	        this.log("Received from client the message ", message);
-	
-	        var action = JSON.parse(message);
-	
-	        if (typeof this.options.onActionReceived == 'function') {
-	          action = this.options.onActionReceived.apply(this, [action, socket]);
-	        }
-	
-	        this.log('Dispatching the action to the store', action);
-	
-	        this.store.dispatch(action);
-	
-	        if (this.options.repeaterMode) {
-	          this.broadcastAction(action, function (s) {
-	            return s !== socket;
-	          });
-	        }
-	      }.bind(this));
-	    }.bind(this));
+	    if (this.store) init(this.store);
 	  }
 	
-	  /**
-	  * Internal log function
-	  *
-	  */
-	
-	
 	  _createClass(ReduxShareServer, [{
+	    key: 'init',
+	    value: function init(store) {
+	      /**
+	       * Bind the socket behavior
+	       */
+	      this.wss.on('connection', function connection(socket) {
+	        if (typeof this.options.onConnection == 'function') {
+	          socket = this.options.onConnection(socket) || socket;
+	        }
+	
+	        socket.on('message', function incoming(message) {
+	          this.log("Received from client the message ", message);
+	
+	          var action = JSON.parse(message);
+	
+	          if (typeof this.options.onActionReceived == 'function') {
+	            action = this.options.onActionReceived.apply(this, [action, socket]);
+	          }
+	
+	          this.log('Dispatching the action to the store', action);
+	
+	          this.store.dispatch(action);
+	
+	          if (this.options.repeaterMode) {
+	            this.broadcastAction(action, function (s) {
+	              return s !== socket;
+	            });
+	          }
+	        }.bind(this));
+	      }.bind(this));
+	      this.readyToServe = true;
+	    }
+	
+	    /**
+	    * Internal log function
+	    *
+	    */
+	
+	  }, {
 	    key: 'log',
 	    value: function log() {
 	      if (this.options.debug) {
@@ -163,7 +177,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        var action = req.body;
 	        this.log('Dispatching an action to the store', action);
 	        this.store.dispatch(action);
-	        this.broadcastAction(action);
+	        if (this.readyToServe) {
+	          this.broadcastAction(action);
+	        }
 	        res.send(JSON.stringify({ success: true }));
 	        res.end();
 	      }.bind(this));
@@ -174,6 +190,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }.bind(this));
 	
 	      return router;
+	    }
+	
+	    /**
+	     * Get the middleware for Redux
+	     * This middleware will broadcast server actions to all clients
+	     *
+	     * @returns {Function}
+	     */
+	
+	  }, {
+	    key: 'getReduxMiddleware',
+	    value: function getReduxMiddleware() {
+	      var _this = this;
+	
+	      return function (store) {
+	        return function (next) {
+	          return function (action) {
+	            _this.log('Action [' + action.type + '] received by the server redux middleware');
+	
+	            if (_this.store === null) {
+	              _this.store = store;
+	            }
+	
+	            //need to enrich next action.
+	            var result = next(action);
+	            // If the action have been received, we don't send it back to the client
+	            if (action.origin === undefined || action.origin === 'server') {
+	              if (_this.options.repeaterMode) {
+	                _this.broadcastAction(action);
+	              }
+	            }
+	            if (action.type === "@@SERVER-LISTEN-START") _this.init(store);
+	            return result;
+	          };
+	        };
+	      };
 	    }
 	
 	    /**
