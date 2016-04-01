@@ -30,7 +30,7 @@ class ReduxShareServer {
       //if set, this function will be called at connection time. Returns the socket.
       onConnection: (socket) => { socket.id = this.socketNumber++; return socket; },
       //if set, this function will be called before receiving each action. Allow you to modify the action.
-      onActionReceived: action => action,
+      onActionReceived: (action,socket) => { action.origin = socket.id; return action; },
       //if set, this function will filter all actions before dispatching. Returns bool.
       shouldDispatch: action => (action.type !== '@@SYNC-CONNECT-SERVER-SUCCESS'), 
       //if set, this function will filter all actions before sending. Returns bool.
@@ -87,35 +87,44 @@ class ReduxShareServer {
    * This middleware will broadcast server actions to all clients
    *  
    *  
-           Local      WS
-             +        +
+
+      store.dispatch  WS
              |        |
+             |  onActionReceived()
              |        |
-             v        v  onActionReceived
-        +----+--------+----+
+             v        v 
+        +------------------+
         |                  |
         |                  |
         |    Middleware    |
         |                  |
         |                  |
         +--------+---------+
-                 |       ShouldDispatch?
-        +--------v---------+
-        |                  |
-        |     Reducers     |
-        |      (next)      |
-        |                  |
-        +--------+---------+
+                 |      
+         ShouldDispatch()? --------+
+                 |                 |
+      (next middleware...then)     |
+        +--------v---------+       |
+        |                  |       |
+        |                  |       |
+        |     Reducers     |       |
+        |                  |       |
+        |                  |       |
+        +--------+---------+       |
+                 |                 |
+                 |<----------------+
                  |
         +--------v---------+
         |                  |
         |    Middleware    |
         |                  |
         +--------+---------+
-                 |       ShouldSend?
-                 v
+                 |      
+                 V
+            ShouldSend()? 
+                 |
+                 V
                  WS
-
    *
    * @returns {Function}
    */
