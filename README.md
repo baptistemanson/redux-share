@@ -22,7 +22,6 @@ The client is available [here](https://github.com/baptistemanson/redux-share-cli
 
 Here is the code to integrate the server side with express:
 
-
 ```javascript
 //server.js
 
@@ -32,6 +31,45 @@ var shareServer = new ReduxShareServer(store,server);
 
 //bind redux server and express
 app.use('/redux',shareServer.getExpressMiddleware());
+
+//apply redux middleware
+var store = createStore(reducer, {defaultState:null},applyMiddleware( shareServer.getReduxMiddleware() ));
+
+```
+
+Here is the schema of the redux middleware, with the the different callbacks and filter functions.
+
+```
+
+           Local      WS
+             +        +
+             |        |
+             |        |
+             v        v  onActionReceived
+        +----+--------+----+
+        |                  |
+        |                  |
+        |    Middleware    |
+        |                  |
+        |                  |
+        +--------+---------+
+                 |       ShouldDispatch?
+        +--------v---------+
+        |                  |
+        |     Reducers     |
+        |      (next)      |
+        |                  |
+        +--------+---------+
+                 |
+        +--------v---------+
+        |                  |
+        |    Middleware    |
+        |                  |
+        +--------+---------+
+                 |       ShouldSend?
+                 v
+                 WS
+
 
 ```
 
