@@ -222,7 +222,12 @@ class ReduxShareServer {
 
         this.log('Dispatching the action to the store', action);
 
-        this.store.dispatch(action);
+        if(this.store) {
+          this.store.dispatch(action);
+        }
+        else {
+          this.log('Store not ready yet, did you forget to add the redux middleware?')
+        }
 
         if (this.options.repeaterMode) {
           this.broadcastAction(action,s => s !== socket);
