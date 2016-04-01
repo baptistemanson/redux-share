@@ -28,25 +28,42 @@ $ npm install git@github.com:baptistemanson/redux-share-server.git
 
 Then add the redux middleware on your server-side store, like so:
 ```javascript
-//server.js
+// server.js
 
 var server = require('http').createServer();
 var redux = require('redux');
 
 var ReduxShareServer = require('redux-share-server');
-//boot the socket server
+
 var reduxShare = new ReduxShareServer(server);
 
 var store = redux.createStore(
   reducers, // your reducers, as usual
-  {defaultState:null}, // you default state, as usual
-   redux.applyMiddleware( reduxShare.getReduxMiddleware()
+  redux.applyMiddleware( reduxShare.getReduxMiddleware()
 ));
+
+//this action starts the socket server
+store.dispatch({type:"@@SERVER-LISTEN-START"});
 
 server.listen(8080 /* port number */);
 
 ```
 
+This is an example of a client install, which works in a browser on a node install:
+```javascript
+// client.js
+import SyncReduxClient from 'redux-share-client';
+import redux from 'redux';
+
+var reduxShare = new SyncReduxClient('ws://localhost:2000');
+var store = redux.createStore(
+  reducers, // your reducers, as usual
+  redux.applyMiddleware( reduxShare.getReduxMiddleware() )
+);
+
+// This action starts the connection to the server.
+store.dispatch({type:"@@SYNC-CONNECT-SERVER-START"});
+```
 
 ## General Architecture
 
