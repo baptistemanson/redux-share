@@ -17,7 +17,7 @@ class ReduxShareServer {
      * Websocket Server
      */
     this.wss = new WebSocketServer({server: server});
-    this.readyToServe = false;
+    
 
     /**
      * Redux store to link to the clients
@@ -28,11 +28,11 @@ class ReduxShareServer {
       //if set to true, will output debug on the console
       debug:false,
       //if set, this function will be called at connection time. Returns the socket.
-      onConnection:null,
+      onConnection: (socket) => { socket.id = this.socketNumber++; return socket; },
       //if set, this function will be called before receiving each action. Allow you to modify the action.
       onActionReceived: action => action,
       //if set, this function will filter all actions before dispatching. Returns bool.
-      shouldDispatch:() => true, 
+      shouldDispatch: action => (action.type !== '@@SYNC-CONNECT-SERVER-SUCCESS'), 
       //if set, this function will filter all actions before sending. Returns bool.
       shouldSend: () => true,
       //if true dispatches all actions received to all other connected clients. Please note that the API call to state bypasses this option.
@@ -40,6 +40,10 @@ class ReduxShareServer {
     };
 
     this.options = Object.assign({},defaultOptions,options);
+
+    //internal state
+    this.readyToServe = false;
+    this.socketNumber = 0;
   }
 
   /**
@@ -117,17 +121,19 @@ class ReduxShareServer {
    */
   getReduxMiddleware() {
     return store => next => action => {
-      this.log('Action "' + action.type + '" received by the server redux middleware');
+      this.log('Action "' + action.type + '" received by the redux middleware');
 
       if(this.store === null) {
         this.store = store;
       }
 
       //should dispatch?
-      if(this.options.shouldDispatch.apply(this,action) ) {
+      if(this.options.shouldDispatch.apply(this,[action]) ) {
+        this.log("We dispatch this action ");
         var result = next(action);
       }
       else {
+        this.log("We dont dispatch this action ");
         var result = null;
       }
       
@@ -185,8 +191,11 @@ class ReduxShareServer {
     let tracedAction = Object.assign({},action,{origin:"server" });
     
     if(this.options.shouldSend.apply(this, [tracedAction, socket])) {
-      this.log("Dispatches an action to a client", tracedAction);
+      this.log("Send to client ", socket.id," ",tracedAction);
       return socket.send(JSON.stringify(tracedAction));
+    }
+    else {
+      this.log("Do not send to client ", socket.id, " ",tracedAction);
     }
 
   }
@@ -217,6 +226,7 @@ class ReduxShareServer {
         let action = JSON.parse(message);
 
         if (typeof(this.options.onActionReceived) == 'function') {
+
           action = this.options.onActionReceived.apply(this, [action, socket])
         }
 
