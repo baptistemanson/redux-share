@@ -17,7 +17,6 @@ class ReduxShareServer {
      * Websocket Server
      */
     this.wss = new WebSocketServer({server: server});
-    
 
     /**
      * Redux store to link to the clients
@@ -26,20 +25,18 @@ class ReduxShareServer {
 
     let defaultOptions = {
       //if set to true, will output debug on the console
-      debug:false,
+      debug: false,
       //if set, this function will be called at connection time. Returns the socket.
       onConnection: (socket) => { socket.id = this.socketNumber++; return socket; },
       //if set, this function will be called before receiving each action. Allow you to modify the action.
-      onActionReceived: (action,socket) => { action.origin = socket.id; return action; },
+      onActionReceived: (action, socket) => { action.origin = socket.id; return action; },
       //if set, this function will filter all actions before dispatching. Returns bool.
-      shouldDispatch: action => (action.type !== '@@SYNC-CONNECT-SERVER-SUCCESS'), 
+      shouldDispatch: action => (action.type !== '@@SYNC-CONNECT-SERVER-SUCCESS'),
       //if set, this function will filter all actions before sending. Returns bool.
       shouldSend: () => true,
-      //if true dispatches all actions received to all other connected clients. Please note that the API call to state bypasses this option.
-      repeaterMode:false
     };
 
-    this.options = Object.assign({},defaultOptions,options);
+    this.options = Object.assign({}, defaultOptions, options);
 
     //internal state
     this.readyToServe = false;
@@ -60,7 +57,7 @@ class ReduxShareServer {
     router.post('/action', function (req, res) {
       let action = req.body;
       this.log('Dispatching an action to the store', action);
-      
+
       if(this.store) {
         this.store.dispatch(action);
         res.send(JSON.stringify({success: true}));
@@ -71,7 +68,7 @@ class ReduxShareServer {
         res.send(JSON.stringify({ success: false, message:message }));
       }
       res.end();
-      
+
     }.bind(this));
 
     router.get('/state', function (req, res) {
@@ -85,14 +82,14 @@ class ReduxShareServer {
   /**
    * Get the middleware for Redux
    * This middleware will broadcast server actions to all clients
-   *  
-   *  
+   *
+   *
 
       store.dispatch  WS
              |        |
              |  onActionReceived()
              |        |
-             v        v 
+             v        v
         +------------------+
         |                  |
         |                  |
@@ -100,7 +97,7 @@ class ReduxShareServer {
         |                  |
         |                  |
         +--------+---------+
-                 |      
+                 |
          ShouldDispatch()? --------+
                  |                 |
       (next middleware...then)     |
@@ -119,9 +116,9 @@ class ReduxShareServer {
         |    Middleware    |
         |                  |
         +--------+---------+
-                 |      
+                 |
                  V
-            ShouldSend()? 
+            ShouldSend()?
                  |
                  V
                  WS
@@ -145,12 +142,10 @@ class ReduxShareServer {
         this.log("We dont dispatch this action ");
         var result = null;
       }
-      
+
       // If the action have been received, we don't send it back to the client
       if (action.origin === undefined || action.origin === 'server') {
-        if (this.options.repeaterMode) {
-          this.broadcastAction(action);
-        }
+        this.broadcastAction(action);
       }
       if (action.type === "@@SERVER-LISTEN-START") this._startListen();
       return result;
@@ -173,8 +168,7 @@ class ReduxShareServer {
 
   /**
    * Broadcasts a message to all clients
-   * 
-   * Bypasses the repeaterMode option.
+   *
    * @param action
    * @param senderSocket
    * @returns array
@@ -184,7 +178,7 @@ class ReduxShareServer {
     this.log("Dispatches an action to all clients", action);
 
     if(typeof(filter) !== 'function') filter = () => true;
-    
+
     return this.wss.clients.filter(filter).map(function each (socket) {
       return this.sendToAction(action, socket);
     }.bind(this));
@@ -198,7 +192,7 @@ class ReduxShareServer {
    */
   sendToAction(action,socket) {
     let tracedAction = Object.assign({},action,{origin:"server" });
-    
+
     if(this.options.shouldSend.apply(this, [tracedAction, socket])) {
       this.log("Send to client ", socket.id," ",tracedAction);
       return socket.send(JSON.stringify(tracedAction));
@@ -248,9 +242,7 @@ class ReduxShareServer {
           this.log('Store not ready yet, did you forget to add the redux middleware?')
         }
 
-        if (this.options.repeaterMode) {
-          this.broadcastAction(action,s => s !== socket);
-        }
+        this.broadcastAction(action,s => s !== socket);
       }.bind(this));
 
     }.bind(this));
@@ -258,6 +250,5 @@ class ReduxShareServer {
   }
 
 }
-
 
 module.exports = ReduxShareServer;
