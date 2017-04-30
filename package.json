@@ -22,15 +22,12 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-react-hmre": "^1.1.1",
     "babel-preset-stage-0": "^6.5.0",
-    "react": "^0.14.7",
-    "react-button": "^1.2.1",
-    "react-dom": "^0.14.7",
-    "webpack": "^1.12.14",
-    "webpack-dev-server": "^1.14.1",
-    "webpack-hot-middleware": "^2.10.0"
-    },
-  "dependencies": { 
-    "redux-share-client":"git@github.com:baptistemanson/redux-share-client.git",
+    "react": "^0.14.9",
+    "react-dom": "^0.14.9",
+    "webpack": "^1.12.14"
+  },
+  "dependencies": {
+    "redux-share-client": "git@github.com:baptistemanson/redux-share-client.git",
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
     "ws": "^1.0.1"
