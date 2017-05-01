@@ -4,6 +4,7 @@
   "description": "share redux state between applications",
   "main": "dist/server.bundle.js",
   "scripts": {
+    "bundle": "webpack --colors --progress",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,6 +23,7 @@
     "babel-preset-react": "^6.5.0",
     "babel-preset-react-hmre": "^1.1.1",
     "babel-preset-stage-0": "^6.5.0",
+    "express": "^4.15.2",
     "react": "^0.14.9",
     "react-dom": "^0.14.9",
     "webpack": "^1.12.14"
