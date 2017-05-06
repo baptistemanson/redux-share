@@ -248,7 +248,6 @@ class ReduxShareServer {
     }.bind(this));
     this.readyToServe = true;
   }
-
 }
 
 module.exports = ReduxShareServer;
