@@ -5,7 +5,7 @@
   "main": "dist/server.bundle.js",
   "scripts": {
     "bundle": "webpack --colors --progress",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha tests"
   },
   "repository": {
     "type": "git",
@@ -38,6 +38,6 @@
     "body-parser": "^1.15.0",
     "express": "^4.13.4",
     "redux-share-client": "git+ssh://git@github.com/baptistemanson/redux-share-client.git",
-    "ws": "^1.0.1"
+    "ws": "^1.1.4"
   }
 }
