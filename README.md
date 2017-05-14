@@ -19,10 +19,8 @@ This page is the main documentation.
 
 ## Install
 
-We only support NPM-like install.
-
 ```bash
-$ npm install git@github.com:baptistemanson/redux-share-server.git
+$ npm install redux-share-server
 
 ```
 
@@ -261,6 +259,21 @@ it won't try to reconnect.
 
 Please consult the  to see the special actions dispatched to the redux store,
 that you can reduce to add your own algorithm.
+
+# Collaborators
+
+This is a fork of
+baptistemanson(https://github.com/baptistemanson/redux-share-server)'s original
+package. His e-mail is baptiste.manson@inovia-team.com if you wish to contact
+him.
+
+The original package only supported a github install. He also has this package
+on NPM but there are errors in the package because both the server and the
+client code are bundled into one. In order to support an NPM like install, I
+published the package under my name since development on the original package
+has ceased.
+
+Initial source credit should go to him and his team.
 
 # FAQ
 

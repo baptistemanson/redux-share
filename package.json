@@ -1,6 +1,6 @@
 {
   "name": "redux-share-server",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "share redux state between applications",
   "main": "dist/server.bundle.js",
   "scripts": {
@@ -9,12 +9,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lawrencetvo/redux-share.git"
+    "url": "https://github.com/lawrencetvo/redux-share-server.git"
   },
   "author": "baptiste.manson@inovia.fr",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/baptistemanson/redux-share/issues"
+    "url": "https://github.com/lawrencetvo/redux-share-server/issues"
   },
   "devDependencies": {
     "babel-core": "^6.7.2",
