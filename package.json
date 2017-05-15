@@ -30,7 +30,7 @@
     "react": "^0.14.9",
     "react-dom": "^0.14.9",
     "redux": "^3.6.0",
-    "redux-share-client": "git+ssh://git@github.com/baptistemanson/redux-share-client.git",
+    "redux-share-client": "0.0.1",
     "webpack": "^1.12.14",
     "websocket": "^1.0.24",
     "ws": "^1.1.4"

@@ -1,5 +1,5 @@
 var redux = require('redux');
-var ReduxShareClient = require('../../../redux-share-client/src/redux-share-client');
+var ReduxShareClient = require('redux-share-client');
 
 var init = function(reducers, config = {}) {
   var reduxShare = new ReduxShareClient('ws://localhost:3000/', config);
